@@ -158,7 +158,7 @@ void ValueFederate::addAlias(const Publication& pub, const std::string& shortcut
     vfManager->addAlias(pub, shortcutName);
 }
 
-void ValueFederate::setDefaultValue(const Input& inp, data_view block)  // NOLINT
+void ValueFederate::setDefaultValue(const Input& inp, data_view block) // NOLINT
 {
     vfManager->setDefaultValue(inp, block);
 }
@@ -184,17 +184,19 @@ static void loadOptions(ValueFederate* fed, const Inp& data, Obj& objUpdate)
 {
     addTargets(data, "flags", [&objUpdate](const std::string& target) {
         if (target.front() != '-') {
-            objUpdate.setOption(getOptionIndex(target), 1);
+            objUpdate.setOption(getOptionIndex(target), true);
         } else {
-            objUpdate.setOption(getOptionIndex(target.substr(2)), 0);
+            objUpdate.setOption(getOptionIndex(target.substr(2)), false);
         }
     });
-    processOptions(
-        data,
-        [](const std::string& option) { return getOptionIndex(option); },
-        [](const std::string& value) { return getOptionValue(value); },
-        [&objUpdate](int32_t option, int32_t value) { objUpdate.setOption(option, value); });
-
+    bool optional = getOrDefault(data, "optional", false);
+    if (optional) {
+        objUpdate.setOption(defs::options::connection_optional, optional);
+    }
+    bool required = getOrDefault(data, "required", false);
+    if (required) {
+        objUpdate.setOption(defs::options::connection_required, required);
+    }
     callIfMember(data, "shortcut", [&objUpdate, fed](const std::string& val) {
         fed->addAlias(objUpdate, val);
     });
@@ -228,8 +230,7 @@ void ValueFederate::registerValueInterfacesJson(const std::string& jsonString)
             Publication* pubAct = &vfManager->getPublication(key);
             if (!pubAct->isValid()) {
                 auto type = getOrDefault(pub, "type", emptyStr);
-                auto units = getOrDefault(pub, "unit", emptyStr);
-                replaceIfMember(pub, "units", units);
+                auto units = getOrDefault(pub, "units", emptyStr);
                 bool global = getOrDefault(pub, "global", defaultGlobal);
                 if (global) {
                     pubAct = &registerGlobalPublication(key, type, units);
@@ -248,8 +249,7 @@ void ValueFederate::registerValueInterfacesJson(const std::string& jsonString)
             auto* subAct = &vfManager->getSubscription(key);
             if (!subAct->isValid()) {
                 auto type = getOrDefault(sub, "type", emptyStr);
-                auto units = getOrDefault(sub, "unit", emptyStr);
-                replaceIfMember(sub, "units", units);
+                auto units = getOrDefault(sub, "units", emptyStr);
                 subAct = &registerInput(emptyStr, type, units);
             }
             subAct->addTarget(key);
@@ -264,8 +264,7 @@ void ValueFederate::registerValueInterfacesJson(const std::string& jsonString)
             Input* inp = &vfManager->getInput(key);
             if (!inp->isValid()) {
                 auto type = getOrDefault(ipt, "type", emptyStr);
-                auto units = getOrDefault(ipt, "unit", emptyStr);
-                replaceIfMember(ipt, "units", units);
+                auto units = getOrDefault(ipt, "units", emptyStr);
                 bool global = getOrDefault(ipt, "global", defaultGlobal);
                 if (global) {
                     inp = &registerGlobalInput(key, type, units);
@@ -303,8 +302,7 @@ void ValueFederate::registerValueInterfacesToml(const std::string& tomlString)
             Publication* pubObj = &vfManager->getPublication(key);
             if (!pubObj->isValid()) {
                 auto type = getOrDefault(pub, "type", emptyStr);
-                auto units = getOrDefault(pub, "unit", emptyStr);
-                replaceIfMember(pub, "units", units);
+                auto units = getOrDefault(pub, "units", emptyStr);
                 bool global = getOrDefault(pub, "global", defaultGlobal);
                 if (global) {
                     pubObj = &registerGlobalPublication(key, type, units);
@@ -329,8 +327,7 @@ void ValueFederate::registerValueInterfacesToml(const std::string& tomlString)
             Input* id = &vfManager->getSubscription(key);
             if (!id->isValid()) {
                 auto type = getOrDefault(sub, "type", emptyStr);
-                auto units = getOrDefault(sub, "unit", emptyStr);
-                replaceIfMember(sub, "units", units);
+                auto units = getOrDefault(sub, "units", emptyStr);
 
                 id = &registerInput(emptyStr, type, units);
             }
@@ -352,8 +349,7 @@ void ValueFederate::registerValueInterfacesToml(const std::string& tomlString)
             Input* id = &vfManager->getInput(key);
             if (!id->isValid()) {
                 auto type = getOrDefault(ipt, "type", emptyStr);
-                auto units = getOrDefault(ipt, "unit", emptyStr);
-                replaceIfMember(ipt, "units", units);
+                auto units = getOrDefault(ipt, "units", emptyStr);
                 bool global = getOrDefault(ipt, "global", defaultGlobal);
                 if (global) {
                     id = &registerGlobalInput(key, type, units);
@@ -382,7 +378,7 @@ const std::string& ValueFederate::getString(Input& inp)
     return inp.getValueRef<std::string>();
 }
 
-void ValueFederate::publishRaw(const Publication& pub, data_view block)  // NOLINT
+void ValueFederate::publishRaw(const Publication& pub, data_view block)
 {
     if ((currentMode == modes::executing) || (currentMode == modes::initializing)) {
         vfManager->publish(pub, block);
@@ -402,7 +398,7 @@ void ValueFederate::publish(Publication& pub, double val)
     pub.publish(val);
 }
 
-using dvalue = mpark::variant<double, std::string>;
+using dvalue = std::variant<double, std::string>;
 
 static void generateData(std::vector<std::pair<std::string, dvalue>>& vpairs,
                          const std::string& prefix,
@@ -469,9 +465,9 @@ void ValueFederate::publishJSON(const std::string& jsonString)
         auto& pub = getPublication(vp.first);
         if (pub.isValid()) {
             if (vp.second.index() == 0) {
-                pub.publish(mpark::get<double>(vp.second));
+                pub.publish(std::get<double>(vp.second));
             } else {
-                pub.publish(mpark::get<std::string>(vp.second));
+                pub.publish(std::get<std::string>(vp.second));
             }
         }
     }

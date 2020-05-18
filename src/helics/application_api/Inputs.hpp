@@ -63,15 +63,15 @@ class HELICS_CXX_EXPORT Input {
     double threshold{0.0};  //!< the threshold to use for binary decisions
     std::string actualName;  //!< the name of the Input
     // this needs to match the defV type
-    mpark::variant<std::function<void(const double&, Time)>,
-                   std::function<void(const int64_t&, Time)>,
-                   std::function<void(const std::string&, Time)>,
-                   std::function<void(const std::complex<double>&, Time)>,
-                   std::function<void(const std::vector<double>&, Time)>,
-                   std::function<void(const std::vector<std::complex<double>>&, Time)>,
-                   std::function<void(const NamedPoint&, Time)>,
-                   std::function<void(const bool&, Time)>,
-                   std::function<void(const Time&, Time)>>
+    std::variant<std::function<void(const double&, Time)>,
+                 std::function<void(const int64_t&, Time)>,
+                 std::function<void(const std::string&, Time)>,
+                 std::function<void(const std::complex<double>&, Time)>,
+                 std::function<void(const std::vector<double>&, Time)>,
+                 std::function<void(const std::vector<std::complex<double>>&, Time)>,
+                 std::function<void(const NamedPoint&, Time)>,
+                 std::function<void(const bool&, Time)>,
+                 std::function<void(const Time&, Time)>>
         value_callback;  //!< callback function for the federate
   public:
     /** Default constructor*/
@@ -576,7 +576,7 @@ template<class X>
 inline const X& getValueRefImpl(defV& val)
 {
     valueConvert(val, helicsType<X>());
-    return mpark::get<X>(val);
+    return std::get<X>(val);
 }
 
 template<>
@@ -584,10 +584,10 @@ inline const std::string& getValueRefImpl(defV& val)
 {
     // don't convert a named point to a string
     if ((val.index() == named_point_loc)) {
-        return mpark::get<NamedPoint>(val).name;
+        return std::get<NamedPoint>(val).name;
     }
     valueConvert(val, data_type::helics_string);
-    return mpark::get<std::string>(val);
+    return std::get<std::string>(val);
 }
 
 template<class X>
