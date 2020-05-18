@@ -737,15 +737,6 @@ public class helics {
   }
 
   /**
-   * Get a property index for use in /ref helicsFederateInfoSetFlagOption, /ref helicsFederateSetFlagOption,<br>
-   * @param val A string with the option name.<br>
-   * @return An int with the property code or (-1) if not a valid property.
-   */
-  public static int helicsGetFlagIndex(String val) {
-    return helicsJNI.helicsGetFlagIndex(val);
-  }
-
-  /**
    * Get an option index for use in /ref helicsPublicationSetOption, /ref helicsInputSetOption, /ref helicsEndpointSetOption,<br>
    * /ref helicsFilterSetOption, and the corresponding get functions.<br>
    * <br>
@@ -755,18 +746,6 @@ public class helics {
    */
   public static int helicsGetOptionIndex(String val) {
     return helicsJNI.helicsGetOptionIndex(val);
-  }
-
-  /**
-   * Get an option value for use in /ref helicsPublicationSetOption, /ref helicsInputSetOption, /ref helicsEndpointSetOption,<br>
-   * /ref helicsFilterSetOption.<br>
-   * <br>
-   * @param val A string representing the value.<br>
-   * <br>
-   * @return An int with the option value or (-1) if not a valid value.
-   */
-  public static int helicsGetOptionValue(String val) {
-    return helicsJNI.helicsGetOptionValue(val);
   }
 
   /**
@@ -1380,25 +1359,6 @@ public class helics {
   }
 
   /**
-   * Set a broker time barrier.<br>
-   * <br>
-   * @param broker The broker to set the time barrier for.<br>
-   * @param barrierTime The time to set the barrier at.
-   */
-  public static void helicsBrokerSetTimeBarrier(SWIGTYPE_p_void broker, double barrierTime) {
-    helicsJNI.helicsBrokerSetTimeBarrier(SWIGTYPE_p_void.getCPtr(broker), barrierTime);
-  }
-
-  /**
-   * Clear any time barrier on a broker.<br>
-   * <br>
-   * @param broker The broker to clear the barriers on.
-   */
-  public static void helicsBrokerClearTimeBarrier(SWIGTYPE_p_void broker) {
-    helicsJNI.helicsBrokerClearTimeBarrier(SWIGTYPE_p_void.getCPtr(broker));
-  }
-
-  /**
    * Create a query object.<br>
    * <br>
    * A query object consists of a target and query string.<br>
@@ -1493,26 +1453,6 @@ public class helics {
    */
   public static int helicsQueryIsCompleted(SWIGTYPE_p_void query) {
     return helicsJNI.helicsQueryIsCompleted(SWIGTYPE_p_void.getCPtr(query));
-  }
-
-  /**
-   * Update the target of a query.<br>
-   * <br>
-   * @param query The query object to change the target of.<br>
-   * @param target the name of the target to query
-   */
-  public static void helicsQuerySetTarget(SWIGTYPE_p_void query, String target) {
-    helicsJNI.helicsQuerySetTarget(SWIGTYPE_p_void.getCPtr(query), target);
-  }
-
-  /**
-   * Update the queryString of a query.<br>
-   * <br>
-   * @param query The query object to change the target of.<br>
-   * @param queryString the new queryString
-   */
-  public static void helicsQuerySetQueryString(SWIGTYPE_p_void query, String queryString) {
-    helicsJNI.helicsQuerySetQueryString(SWIGTYPE_p_void.getCPtr(query), queryString);
   }
 
   /**
@@ -1778,9 +1718,7 @@ public class helics {
   }
 
   /**
-   * Clear all the update flags from a federates inputs.<br>
-   * <br>
-   * @param fed The value federate object for which to clear update flags.
+   * Clear all the update flags from a federates inputs.
    */
   public static void helicsFederateClearUpdates(SWIGTYPE_p_void fed) {
     helicsJNI.helicsFederateClearUpdates(SWIGTYPE_p_void.getCPtr(fed));
@@ -1789,10 +1727,6 @@ public class helics {
   /**
    * Register the publications via JSON publication string.<br>
    * <br>
-   * @param fed The value federate object to use to register the publications.<br>
-   * @param json The JSON publication string.<br>
-   * <br>
-   * <br>
    * This would be the same JSON that would be used to publish data.
    */
   public static void helicsFederateRegisterFromPublicationJSON(SWIGTYPE_p_void fed, String json) {
@@ -1800,10 +1734,7 @@ public class helics {
   }
 
   /**
-   * Publish data contained in a JSON file or string.<br>
-   * <br>
-   * @param fed The value federate object through which to publish the data.<br>
-   * @param json The publication file name or literal JSON data string.
+   * Publish data contained in a json file or string.
    */
   public static void helicsFederatePublishJSON(SWIGTYPE_p_void fed, String json) {
     helicsJNI.helicsFederatePublishJSON(SWIGTYPE_p_void.getCPtr(fed), json);
@@ -1973,8 +1904,8 @@ public class helics {
    * <br>
    * @return Raw string data.
    */
-  public static void helicsInputGetRawValue(SWIGTYPE_p_void ipt, SWIGTYPE_p_void data, int maxDataLength, int[] actualSize) {
-    helicsJNI.helicsInputGetRawValue(SWIGTYPE_p_void.getCPtr(ipt), SWIGTYPE_p_void.getCPtr(data), maxDataLength, actualSize);
+  public static void helicsInputGetRawValue(SWIGTYPE_p_void ipt, SWIGTYPE_p_void data, int maxDatalen, int[] actualSize) {
+    helicsJNI.helicsInputGetRawValue(SWIGTYPE_p_void.getCPtr(ipt), SWIGTYPE_p_void.getCPtr(data), maxDatalen, actualSize);
   }
 
   /**
@@ -2102,8 +2033,8 @@ public class helics {
    * <br>
    * @return a list of floating point values
    */
-  public static void helicsInputGetVector(SWIGTYPE_p_void ipt, SWIGTYPE_p_double data, int maxLength, int[] actualSize) {
-    helicsJNI.helicsInputGetVector(SWIGTYPE_p_void.getCPtr(ipt), SWIGTYPE_p_double.getCPtr(data), maxLength, actualSize);
+  public static void helicsInputGetVector(SWIGTYPE_p_void ipt, SWIGTYPE_p_double data, int maxlen, int[] actualSize) {
+    helicsJNI.helicsInputGetVector(SWIGTYPE_p_void.getCPtr(ipt), SWIGTYPE_p_double.getCPtr(data), maxlen, actualSize);
   }
 
   /**
@@ -2379,19 +2310,19 @@ public class helics {
   }
 
   /**
-   * Get the current value of an input handle option<br>
+   * Get the data in the info field of an input.<br>
    * <br>
    * @param inp The input to query.<br>
    * @param option Integer representation of the option in question see /ref helics_handle_options.<br>
    * <br>
-   * @return An integer value with the current value of the given option.
+   * @return A string with the info field string.
    */
   public static int helicsInputGetOption(SWIGTYPE_p_void inp, int option) {
     return helicsJNI.helicsInputGetOption(SWIGTYPE_p_void.getCPtr(inp), option);
   }
 
   /**
-   * Set an option on an input<br>
+   * Set the data in the info field for an input.<br>
    * <br>
    * @param inp The input to query.<br>
    * @param option The option to set for the input /ref helics_handle_options.<br>
@@ -2402,7 +2333,7 @@ public class helics {
   }
 
   /**
-   * Get the value of an option for a publication<br>
+   * Get the data in the info field of a publication.<br>
    * <br>
    * @param pub The publication to query.<br>
    * @param option The value to query see /ref helics_handle_options.<br>
@@ -2414,7 +2345,7 @@ public class helics {
   }
 
   /**
-   * Set the value of an option for a publication<br>
+   * Set the data in the info field for a publication.<br>
    * <br>
    * @param pub The publication to query.<br>
    * @param option Integer code for the option to set /ref helics_handle_options.<br>
@@ -2566,10 +2497,10 @@ public class helics {
    * Set the default destination for an endpoint if no other endpoint is given.<br>
    * <br>
    * @param endpoint The endpoint to set the destination for.<br>
-   * @param dst A string naming the desired default endpoint.
+   * @param dest A string naming the desired default endpoint.
    */
-  public static void helicsEndpointSetDefaultDestination(SWIGTYPE_p_void endpoint, String dst) {
-    helicsJNI.helicsEndpointSetDefaultDestination(SWIGTYPE_p_void.getCPtr(endpoint), dst);
+  public static void helicsEndpointSetDefaultDestination(SWIGTYPE_p_void endpoint, String dest) {
+    helicsJNI.helicsEndpointSetDefaultDestination(SWIGTYPE_p_void.getCPtr(endpoint), dest);
   }
 
   /**
@@ -2587,22 +2518,22 @@ public class helics {
    * Send a message to the specified destination.<br>
    * <br>
    * @param endpoint The endpoint to send the data from.<br>
-   * @param dst The target destination.<br>
+   * @param dest The target destination.<br>
    * <br>
    * <br>
    *             "" to use the default destination.<br>
    * <br>
    * @param data The data to send.
    */
-  public static void helicsEndpointSendMessageRaw(SWIGTYPE_p_void endpoint, String dst, SWIGTYPE_p_void data, int inputDataLength) {
-    helicsJNI.helicsEndpointSendMessageRaw(SWIGTYPE_p_void.getCPtr(endpoint), dst, SWIGTYPE_p_void.getCPtr(data), inputDataLength);
+  public static void helicsEndpointSendMessageRaw(SWIGTYPE_p_void endpoint, String dest, SWIGTYPE_p_void data, int inputDataLength) {
+    helicsJNI.helicsEndpointSendMessageRaw(SWIGTYPE_p_void.getCPtr(endpoint), dest, SWIGTYPE_p_void.getCPtr(data), inputDataLength);
   }
 
   /**
    * Send a message at a specific time to the specified destination.<br>
    * <br>
    * @param endpoint The endpoint to send the data from.<br>
-   * @param dst The target destination.<br>
+   * @param dest The target destination.<br>
    * <br>
    * <br>
    *             "" to use the default destination.<br>
@@ -2611,8 +2542,8 @@ public class helics {
    * <br>
    * @param time The time the message should be sent.
    */
-  public static void helicsEndpointSendEventRaw(SWIGTYPE_p_void endpoint, String dst, SWIGTYPE_p_void data, int inputDataLength, double time) {
-    helicsJNI.helicsEndpointSendEventRaw(SWIGTYPE_p_void.getCPtr(endpoint), dst, SWIGTYPE_p_void.getCPtr(data), inputDataLength, time);
+  public static void helicsEndpointSendEventRaw(SWIGTYPE_p_void endpoint, String dest, SWIGTYPE_p_void data, int inputDataLength, double time) {
+    helicsJNI.helicsEndpointSendEventRaw(SWIGTYPE_p_void.getCPtr(endpoint), dest, SWIGTYPE_p_void.getCPtr(data), inputDataLength, time);
   }
 
   /**
@@ -2727,7 +2658,7 @@ public class helics {
    * <br>
    * The message is empty and isValid will return false since there is no data associated with the message yet.<br>
    * <br>
-   * @param endpoint The endpoint object to associate the message with.<br>
+   * <br>
    * <br>
    * <br>
    * @return A new helics_message_object.
@@ -2853,33 +2784,32 @@ public class helics {
   /**
    * Set the data in the info field for a filter.<br>
    * <br>
-   * <br>
+   * @param end The endpoint to query.<br>
    * @param info The string to set.
    */
-  public static void helicsEndpointSetInfo(SWIGTYPE_p_void endpoint, String info) {
-    helicsJNI.helicsEndpointSetInfo(SWIGTYPE_p_void.getCPtr(endpoint), info);
+  public static void helicsEndpointSetInfo(SWIGTYPE_p_void end, String info) {
+    helicsJNI.helicsEndpointSetInfo(SWIGTYPE_p_void.getCPtr(end), info);
   }
 
   /**
    * Set a handle option on an endpoint.<br>
    * <br>
-   * <br>
+   * @param end The endpoint to modify.<br>
    * @param option Integer code for the option to set /ref helics_handle_options.<br>
    * @param value The value to set the option to.
    */
-  public static void helicsEndpointSetOption(SWIGTYPE_p_void endpoint, int option, int value) {
-    helicsJNI.helicsEndpointSetOption(SWIGTYPE_p_void.getCPtr(endpoint), option, value);
+  public static void helicsEndpointSetOption(SWIGTYPE_p_void end, int option, int value) {
+    helicsJNI.helicsEndpointSetOption(SWIGTYPE_p_void.getCPtr(end), option, value);
   }
 
   /**
    * Set a handle option on an endpoint.<br>
    * <br>
-   * <br>
-   * @param option Integer code for the option to set /ref helics_handle_options.<br>
-   * @return the value of the option, for boolean options will be 0 or 1
+   * @param end The endpoint to modify.<br>
+   * @param option Integer code for the option to set /ref helics_handle_options.
    */
-  public static int helicsEndpointGetOption(SWIGTYPE_p_void endpoint, int option) {
-    return helicsJNI.helicsEndpointGetOption(SWIGTYPE_p_void.getCPtr(endpoint), option);
+  public static int helicsEndpointGetOption(SWIGTYPE_p_void end, int option) {
+    return helicsJNI.helicsEndpointGetOption(SWIGTYPE_p_void.getCPtr(end), option);
   }
 
   /**
@@ -2991,8 +2921,8 @@ public class helics {
    * <br>
    * @return Raw string data.
    */
-  public static void helicsMessageGetRawData(SWIGTYPE_p_void message, SWIGTYPE_p_void data, int maxMessageLength, int[] actualSize) {
-    helicsJNI.helicsMessageGetRawData(SWIGTYPE_p_void.getCPtr(message), SWIGTYPE_p_void.getCPtr(data), maxMessageLength, actualSize);
+  public static void helicsMessageGetRawData(SWIGTYPE_p_void message, SWIGTYPE_p_void data, int maxMessagelen, int[] actualSize) {
+    helicsJNI.helicsMessageGetRawData(SWIGTYPE_p_void.getCPtr(message), SWIGTYPE_p_void.getCPtr(data), maxMessagelen, actualSize);
   }
 
   /**
@@ -3020,10 +2950,10 @@ public class helics {
    * Set the destination of a message.<br>
    * <br>
    * @param message The message object in question.<br>
-   * @param dst A string containing the new destination.
+   * @param dest A string containing the new destination.
    */
-  public static void helicsMessageSetDestination(SWIGTYPE_p_void message, String dst) {
-    helicsJNI.helicsMessageSetDestination(SWIGTYPE_p_void.getCPtr(message), dst);
+  public static void helicsMessageSetDestination(SWIGTYPE_p_void message, String dest) {
+    helicsJNI.helicsMessageSetDestination(SWIGTYPE_p_void.getCPtr(message), dest);
   }
 
   /**
@@ -3040,10 +2970,10 @@ public class helics {
    * Set the original destination of a message.<br>
    * <br>
    * @param message The message object in question.<br>
-   * @param dst A string containing the new original source.
+   * @param dest A string containing the new original source.
    */
-  public static void helicsMessageSetOriginalDestination(SWIGTYPE_p_void message, String dst) {
-    helicsJNI.helicsMessageSetOriginalDestination(SWIGTYPE_p_void.getCPtr(message), dst);
+  public static void helicsMessageSetOriginalDestination(SWIGTYPE_p_void message, String dest) {
+    helicsJNI.helicsMessageSetOriginalDestination(SWIGTYPE_p_void.getCPtr(message), dest);
   }
 
   /**
@@ -3135,11 +3065,11 @@ public class helics {
   /**
    * Copy a message object.<br>
    * <br>
-   * @param src_message The message object to copy from.<br>
-   * @param dst_message The message object to copy to.
+   * @param source_message The message object to copy from.<br>
+   * @param dest_message The message object to copy to.
    */
-  public static void helicsMessageCopy(SWIGTYPE_p_void src_message, SWIGTYPE_p_void dst_message) {
-    helicsJNI.helicsMessageCopy(SWIGTYPE_p_void.getCPtr(src_message), SWIGTYPE_p_void.getCPtr(dst_message));
+  public static void helicsMessageCopy(SWIGTYPE_p_void source_message, SWIGTYPE_p_void dest_message) {
+    helicsJNI.helicsMessageCopy(SWIGTYPE_p_void.getCPtr(source_message), SWIGTYPE_p_void.getCPtr(dest_message));
   }
 
   /**
@@ -3356,10 +3286,10 @@ public class helics {
    * <br>
    * All messages going to a destination are copied to the delivery address(es).<br>
    * @param filt The given filter to add a destination target to.<br>
-   * @param dst The name of the endpoint to add as a destination target.
+   * @param dest The name of the endpoint to add as a destination target.
    */
-  public static void helicsFilterAddDestinationTarget(SWIGTYPE_p_void filt, String dst) {
-    helicsJNI.helicsFilterAddDestinationTarget(SWIGTYPE_p_void.getCPtr(filt), dst);
+  public static void helicsFilterAddDestinationTarget(SWIGTYPE_p_void filt, String dest) {
+    helicsJNI.helicsFilterAddDestinationTarget(SWIGTYPE_p_void.getCPtr(filt), dest);
   }
 
   /**
@@ -3432,7 +3362,7 @@ public class helics {
    * <br>
    * @param filt The given filter.<br>
    * @param option The option to set /ref helics_handle_options.<br>
-   * @param value The value of the option commonly 0 for false 1 for true.
+   * @param value The value of the option (helics_true or helics_false).
    */
   public static void helicsFilterSetOption(SWIGTYPE_p_void filt, int option, int value) {
     helicsJNI.helicsFilterSetOption(SWIGTYPE_p_void.getCPtr(filt), option, value);

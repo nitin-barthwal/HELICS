@@ -879,8 +879,7 @@ message_processing_result FederateState::processActionMessage(ActionMessage& cmd
                 cmd.setAction(CMD_EXEC_CHECK);
                 return processActionMessage(cmd);
             }
-            FALLTHROUGH
-            /* FALLTHROUGH */
+            [[fallthrough]];
         case CMD_EXEC_GRANT:
             switch (timeCoord->processTimeMessage(cmd)) {
                 case message_process_result::delay_processing:
@@ -891,8 +890,7 @@ message_processing_result FederateState::processActionMessage(ActionMessage& cmd
                 default:
                     break;
             }
-            FALLTHROUGH
-            /* FALLTHROUGH */
+            [[fallthrough]];
         case CMD_EXEC_CHECK:  // just check the time for entry
         {
             if (state != HELICS_INITIALIZING) {
@@ -1016,8 +1014,7 @@ message_processing_result FederateState::processActionMessage(ActionMessage& cmd
                 cmd.setAction(CMD_TIME_CHECK);
                 return processActionMessage(cmd);
             }
-            FALLTHROUGH
-            /* FALLTHROUGH */
+            [[fallthrough]];
         case CMD_TIME_GRANT:
             switch (timeCoord->processTimeMessage(cmd)) {
                 case message_process_result::delay_processing:
@@ -1028,8 +1025,7 @@ message_processing_result FederateState::processActionMessage(ActionMessage& cmd
                 default:
                     break;
             }
-            FALLTHROUGH
-            /* FALLTHROUGH */
+            [[fallthrough]];
         case CMD_TIME_CHECK: {
             if (state != HELICS_EXECUTING) {
                 break;

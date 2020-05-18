@@ -9,6 +9,7 @@ SPDX-License-Identifier: BSD-3-Clause
 
 #include "../common/JsonProcessingFunctions.hpp"
 #include "../common/fmt_format.h"
+#include "../common/logger.h"
 #include "BrokerFactory.hpp"
 #include "ForwardingTimeCoordinator.hpp"
 #include "TimeoutMonitor.h"
@@ -641,22 +642,6 @@ std::string CoreBroker::generateFederationSummary() const
     return output;
 }
 
-void CoreBroker::generateTimeBarrier(ActionMessage& m)
-{
-    if (checkActionFlag(m, cancel_flag)) {
-        ActionMessage cancelBarrier(CMD_TIME_BARRIER_CLEAR);
-        cancelBarrier.source_id = global_broker_id_local;
-        cancelBarrier.messageID = global_broker_id_local.baseValue();
-        broadcast(cancelBarrier);
-        return;
-    }
-    m.setAction(CMD_TIME_BARRIER);
-    m.source_id = global_broker_id_local;
-    m.messageID = global_broker_id_local.baseValue();
-    // time should already be set
-    broadcast(m);
-}
-
 void CoreBroker::transmitDelayedMessages()
 {
     auto msg = delayTransmitQueue.pop();
@@ -761,8 +746,7 @@ void CoreBroker::processCommand(ActionMessage&& command)
                         "disconnecting from check connections");
             break;
         case CMD_CONNECTION_ERROR:
-            // if anyone else as has terminated assume they finalized and the connection was
-            // lost
+            // if anyone else as has terminated assume they finalized and the connection was lost
             if (command.dest_id == global_broker_id_local) {
                 bool partDisconnected{false};
                 bool ignore{false};
@@ -941,8 +925,7 @@ void CoreBroker::processCommand(ActionMessage&& command)
                     command.source_id = brk->global_id;
                 }
             }
-            FALLTHROUGH
-            /* FALLTHROUGH */
+            [[fallthrough]];
         case CMD_DISCONNECT:
         case CMD_DISCONNECT_CORE:
         case CMD_DISCONNECT_BROKER:
@@ -984,8 +967,8 @@ void CoreBroker::processCommand(ActionMessage&& command)
         } break;
         case CMD_STOP:
             if ((getAllConnectionState() <
-                 connection_state::disconnected)) {  // only send a disconnect message if we
-                                                     // haven't done so already
+                 connection_state::disconnected)) {  // only send a disconnect message if we haven't
+                                                     // done so already
                 timeCoord->disconnect();
                 if (!isRootc) {
                     ActionMessage m(CMD_DISCONNECT);
@@ -1018,13 +1001,6 @@ void CoreBroker::processCommand(ActionMessage&& command)
                 transmit(getRoute(command.dest_id), command);
             }
 
-            break;
-        case CMD_TIME_BARRIER:
-        case CMD_TIME_BARRIER_CLEAR:
-            broadcast(command);
-            break;
-        case CMD_TIME_BARRIER_REQUEST:
-            generateTimeBarrier(command);
             break;
         case CMD_TIME_REQUEST:
         case CMD_TIME_GRANT:
@@ -1707,26 +1683,6 @@ bool CoreBroker::connect()
     return isConnected();
 }
 
-void CoreBroker::setTimeBarrier(Time barrierTime)
-{
-    if (barrierTime == Time::maxVal()) {
-        return clearTimeBarrier();
-    }
-    ActionMessage tbarrier(CMD_TIME_BARRIER_REQUEST);
-    tbarrier.source_id = global_id.load();
-    tbarrier.actionTime = barrierTime;
-    addActionMessage(tbarrier);
-}
-
-void CoreBroker::clearTimeBarrier()
-{
-    ActionMessage tbarrier(CMD_TIME_BARRIER_REQUEST);
-    tbarrier.source_id = global_id.load();
-    tbarrier.actionTime = Time::maxVal();
-    setActionFlag(tbarrier, cancel_flag);
-    addActionMessage(tbarrier);
-}
-
 bool CoreBroker::isConnected() const
 {
     auto state = brokerState.load(std::memory_order_acquire);
@@ -1986,7 +1942,7 @@ void CoreBroker::executeInitializationOperations()
     if (res == message_processing_result::next_step) {
         enteredExecutionMode = true;
     }
-    logFlush();
+    loggingObj->flush();
 }
 
 void CoreBroker::FindandNotifyInputTargets(BasicHandleInfo& handleInfo)
@@ -2466,7 +2422,7 @@ std::string CoreBroker::generateQueryAnswer(const std::string& request)
     if ((request == "queries") || (request == "available_queries")) {
         return "[isinit;isconnected;name;identifier;address;queries;address;counts;summary;federates;brokers;inputs;endpoints;"
                "publications;filters;federate_map;dependency_graph;data_flow_graph;dependencies;dependson;dependents;"
-               "current_time;current_state;status;global_time;version;version_all;exists]";
+               "current_time;current_state;global_time;version;version_all;exists]";
     }
     if (request == "address") {
         return getAddress();
@@ -2474,22 +2430,9 @@ std::string CoreBroker::generateQueryAnswer(const std::string& request)
     if (request == "version") {
         return versionString;
     }
-    if (request == "status") {
-        Json::Value base;
-        base["name"] = getIdentifier();
-        if (uuid_like) {
-            base["uuid"] = getIdentifier();
-        }
-        base["state"] = brokerStateName(brokerState.load());
-        base["status"] = isConnected();
-        return generateJsonString(base);
-    }
     if (request == "counts") {
         Json::Value base;
         base["name"] = getIdentifier();
-        if (uuid_like) {
-            base["uuid"] = getIdentifier();
-        }
         base["id"] = global_broker_id_local.baseValue();
         if (!isRootc) {
             base["parent"] = higher_broker_id.baseValue();
@@ -2511,15 +2454,11 @@ std::string CoreBroker::generateQueryAnswer(const std::string& request)
     if (request == "current_state") {
         Json::Value base;
         base["name"] = getIdentifier();
-        if (uuid_like) {
-            base["uuid"] = getIdentifier();
-        }
         base["id"] = global_broker_id_local.baseValue();
         if (!isRootc) {
             base["parent"] = higher_broker_id.baseValue();
         }
         base["state"] = brokerStateName(brokerState.load());
-        base["status"] = isConnected();
         base["federates"] = Json::arrayValue;
         for (const auto& fed : _federates) {
             Json::Value fedstate;
@@ -2606,9 +2545,6 @@ std::string CoreBroker::generateQueryAnswer(const std::string& request)
     if (request == "dependencies") {
         Json::Value base;
         base["name"] = getIdentifier();
-        if (uuid_like) {
-            base["uuid"] = getIdentifier();
-        }
         base["id"] = global_broker_id_local.baseValue();
         if (!isRootc) {
             base["parent"] = higher_broker_id.baseValue();
@@ -2664,9 +2600,6 @@ void CoreBroker::initializeMapBuilder(const std::string& request, std::uint16_t 
     builder.reset();
     Json::Value& base = builder.getJValue();
     base["name"] = getIdentifier();
-    if (uuid_like) {
-        base["uuid"] = getIdentifier();
-    }
     base["id"] = global_broker_id_local.baseValue();
     if (!isRootc) {
         base["parent"] = higher_broker_id.baseValue();
@@ -2944,8 +2877,8 @@ void CoreBroker::checkDependencies()
             }
         }
     } else {
-        // if there is more than 2 dependents(higher broker + 2 or more other objects then we
-        // need to be a timeCoordinator
+        // if there is more than 2 dependents(higher broker + 2 or more other objects then we need
+        // to be a timeCoordinator
         if (timeCoord->getDependents().size() > 2) {
             return;
         }

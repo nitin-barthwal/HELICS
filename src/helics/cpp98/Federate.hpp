@@ -358,8 +358,6 @@ class Federate {
     void finalizeAsync() { helicsFederateFinalizeAsync(fed, hThrowOnError()); }
     /** complete the asynchronous terminate pair*/
     void finalizeComplete() { helicsFederateFinalizeComplete(fed, hThrowOnError()); }
-    /** get the current time from a federate */
-    helics_time getCurrentTime() { return helicsFederateGetCurrentTime(fed, hThrowOnError()); }
     /** request a time advancement
    @param time the next requested time step
    @return the granted time step*/
@@ -593,8 +591,6 @@ class Federate {
     }
     /** get a Core Object*/
     helics_core getCore() { return helicsFederateGetCoreObject(fed, hThrowOnError()); }
-    /** get the C object for use in the C library*/
-    helics_federate getObject() const { return fed; }
 
   protected:
     helics_federate fed;  //!< underlying helics_federate object

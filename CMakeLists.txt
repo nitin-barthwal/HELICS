@@ -7,24 +7,16 @@
 # SPDX-License-Identifier: BSD-3-Clause
 # ~~~
 
-cmake_minimum_required(VERSION 3.4)
-# Make sure users don't get warnings on a tested (3.4 to 3.17) version of CMake. For most of the
-# policies, the new version is better (hence the change). We don't use the 3.0...3.16 syntax because
-# of a bug in MSVC 15.7 built-in and modified CMake 3.11
-if(CMAKE_VERSION VERSION_LESS 3.17)
-    cmake_policy(VERSION ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION})
-else()
-    cmake_policy(VERSION 3.17)
-endif()
+cmake_minimum_required(VERSION 3.10...3.17)
 
-project(HELICS VERSION 2.6.0)
+project(HELICS VERSION 3.0.0)
 
 # -----------------------------------------------------------------------------
 # HELICS Version number
 # -----------------------------------------------------------------------------
-set(HELICS_VERSION_BUILD)
+set(HELICS_VERSION_BUILD "pre-alpha")
 # use ISO date YYYY-MM-DD
-set(HELICS_DATE "2020-08-20")
+set(HELICS_DATE "2020-05-16")
 
 set(HELICS_VERSION_UNDERSCORE
     "${HELICS_VERSION_MAJOR}_${HELICS_VERSION_MINOR}_${HELICS_VERSION_PATCH}"
@@ -80,7 +72,7 @@ include(ucm)
 # -----------------------------------------------------------------------------
 # set the install path to a local directory
 # -----------------------------------------------------------------------------
-if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT AND CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     if(WIN32)
         if(MSVC)
             set(CMAKE_INSTALL_PREFIX "C:/local/helics_${HELICS_VERSION_UNDERSCORE}/"
@@ -100,48 +92,12 @@ if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT AND CMAKE_PROJECT_NAME STREQUAL P
     endif(WIN32)
 endif()
 
-# Check to make sure the install prefix isn't the build folder, if it is, build errors will happen
-get_filename_component(tmp_install_prefix ${CMAKE_INSTALL_PREFIX} REALPATH)
-get_filename_component(tmp_proj_bindir ${PROJECT_BINARY_DIR} REALPATH)
-# Windows paths are case insensitive
-if(WIN32)
-    string(TOLOWER "${tmp_install_prefix}" tmp_install_prefix)
-    string(TOLOWER "${tmp_proj_bindir}" tmp_proj_bindir)
-endif()
-if(tmp_install_prefix STREQUAL tmp_proj_bindir)
-    message(FATAL_ERROR "CMAKE_INSTALL_PREFIX must not be set to the build folder")
-endif()
-
 if(MSYS
    OR CYGWIN
    OR UNIX
    OR APPLE
 )
     set(UNIX_LIKE TRUE)
-endif()
-
-# Set the build output paths
-if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
-    if(NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
-        set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib" CACHE PATH
-                                                                           "Archive output dir."
-        )
-    endif()
-    if(NOT CMAKE_LIBRARY_OUTPUT_DIRECTORY)
-        set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib" CACHE PATH
-                                                                           "Library output dir."
-        )
-    endif()
-    if(NOT CMAKE_PDB_OUTPUT_DIRECTORY)
-        set(CMAKE_PDB_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
-            CACHE PATH "PDB (MSVC debug symbol)output dir."
-        )
-    endif()
-    if(NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY)
-        set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
-            CACHE PATH "Executable/dll output dir."
-        )
-    endif()
 endif()
 
 # allow BOOST library inclusion to be turned off completely; this option will disable the IPC core
@@ -178,7 +134,7 @@ cmake_dependent_option(
 
 cmake_dependent_option(
     HELICS_BUILD_BENCHMARKS "Build HELICS Benchmarks" OFF
-    "CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME;CMAKE_VERSION VERSION_GREATER 3.5" OFF
+    "CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME" OFF
 )
 
 cmake_dependent_advanced_option(
@@ -256,6 +212,9 @@ add_library(HELICS::compile_flags_target ALIAS compile_flags_target)
 add_library(HELICS::build_flags_target ALIAS build_flags_target)
 
 get_target_property(EXTRA_BUILD_FLAGS build_flags_target INTERFACE_COMPILE_OPTIONS)
+set(HELICS_BUILD_FLAGS_OUTPUT
+    "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_RELEASE} ${CMAKE_STATIC_LINKER_FLAGS} ${EXTRA_BUILD_FLAGS} "
+)
 
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     if(NOT USE_LIBCXX)
@@ -320,13 +279,6 @@ if(HELICS_BUILD_TESTS AND HELICS_TEST_CODE_COVERAGE)
     endif()
 endif()
 
-# -------------------------------------------------------------
-# Get some configuration for C++17 as that becomes available
-# -------------------------------------------------------------
-# message(STATUS ${CMAKE_CXX_FLAGS})
-set(CONFIGURE_TARGET_LOCATION ${HELICS_BINARY_DIR}/helics_generated_includes/helics/)
-include(configGenerator)
-
 if(HELICS_GENERATE_DOXYGEN_DOC)
     find_package(Doxygen)
     if(DOXYGEN_FOUND)
@@ -389,9 +341,6 @@ if(NOT HELICS_DISABLE_GIT_OPERATIONS)
         submod_update(ThirdParty/netif)
     endif()
 
-    if(NOT EXISTS "${PROJECT_SOURCE_DIR}/ThirdParty/spdlog/CMakeLists.txt")
-        submod_update(ThirdParty/spdlog)
-    endif()
     check_submodule_status()
 
 endif() # NOT HELICS_DISABLE_GIT_OPERATIONS
@@ -660,12 +609,6 @@ include(addfmt)
 # -----------------------------------------------------------
 include(addJsoncpp)
 add_library(HELICS::jsoncpp_lib ALIAS jsoncpp_lib)
-
-# --------------------------------------------------------------
-# Create the target for spdlog
-# -----------------------------------------------------------
-include(addSpdlog)
-add_library(HELICS::spdlog ALIAS spdlog)
 
 # --------------------------------------------------------------
 # Create the target for unitslib
@@ -998,7 +941,6 @@ if(HELICS_ENABLE_PACKAGE_BUILD)
         java
         octave
         csharp
-        benchmarks
         cereal
     )
     if(WIN32)
@@ -1013,7 +955,6 @@ if(HELICS_ENABLE_PACKAGE_BUILD)
     set(CPACK_COMPONENT_LIBS_DISPLAY_NAME "Libraries")
     set(CPACK_COMPONENT_HEADERS_DISPLAY_NAME "Headers")
     set(CPACK_COMPONENT_RUNTIME_DISPLAY_NAME "Runtime Libraries")
-    set(CPACK_COMPONENT_BENCHMARKS_DISPLAY_NAME "Benchmarks")
     set(CPACK_COMPONENT_SWIG_DISPLAY_NAME "SWIG")
     set(CPACK_COMPONENT_JAVA_DISPLAY_NAME "Java")
     set(CPACK_COMPONENT_PYTHON_DISPLAY_NAME "Python")
@@ -1041,7 +982,6 @@ if(HELICS_ENABLE_PACKAGE_BUILD)
     set(CPACK_COMPONENT_LIBS_DESCRIPTION "Libraries for compiling and linking with HELICS")
     set(CPACK_COMPONENT_HEADERS_DESCRIPTION "Headers for linking and compiling with HELICS")
     set(CPACK_COMPONENT_RUNTIME_DESCRIPTION "Runtime libraries for HELICS")
-    set(CPACK_COMPONENT_BENCHMARKS_DESCRIPTION "Benchmark applications for HELICS")
     set(CPACK_COMPONENT_CEREAL_DESCRIPTION
         "cereal C++11 serialization library [no support for other language interfaces]"
     )
