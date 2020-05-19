@@ -3836,7 +3836,7 @@ void CommonCore::processCoreConfigureCommands(ActionMessage& cmd)
             } else {
                 auto op = dataAirlocks[cmd.counter].try_unload();
                 if (op) {
-                    auto M = stx::any_cast<
+                    auto M = std::any_cast<
                         std::function<void(int, const std::string&, const std::string&)>>(
                         std::move(*op));
                     M(0, identifier, "logging callback activated");
@@ -3849,7 +3849,7 @@ void CommonCore::processCoreConfigureCommands(ActionMessage& cmd)
             int ii = cmd.counter;
             auto op = dataAirlocks[ii].try_unload();
             if (op) {
-                auto M = stx::any_cast<std::shared_ptr<FilterOperator>>(std::move(*op));
+                auto M = std::any_cast<std::shared_ptr<FilterOperator>>(std::move(*op));
                 FiltI->filterOp = std::move(M);
             }
         } break;

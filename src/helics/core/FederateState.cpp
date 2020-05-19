@@ -10,7 +10,7 @@ SPDX-License-Identifier: BSD-3-Clause
 #include "CommonCore.hpp"
 #include "CoreFederateInfo.hpp"
 #include "EndpointInfo.hpp"
-#include "InputInfo.hpp"
+#include "NamedInputInfo.hpp"
 #include "PublicationInfo.hpp"
 #include "TimeCoordinator.hpp"
 #include "TimeDependencies.hpp"
@@ -22,6 +22,7 @@ SPDX-License-Identifier: BSD-3-Clause
 #include <chrono>
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <string>
 #include <thread>
 #include <utility>
@@ -96,18 +97,18 @@ static const std::string emptyStr;
 using namespace std::chrono_literals;  // NOLINT
 
 namespace helics {
-FederateState::FederateState(const std::string& fedName, const CoreFederateInfo& fedInfo):
-    name(fedName),
+FederateState::FederateState(const std::string& name_, const CoreFederateInfo& info_):
+    name(name_),
     timeCoord(new TimeCoordinator([this](const ActionMessage& msg) { routeMessage(msg); })),
     global_id{global_federate_id()}
 {
-    for (const auto& prop : fedInfo.timeProps) {
+    for (const auto& prop : info_.timeProps) {
         setProperty(prop.first, prop.second);
     }
-    for (const auto& prop : fedInfo.intProps) {
+    for (const auto& prop : info_.intProps) {
         setProperty(prop.first, prop.second);
     }
-    for (const auto& prop : fedInfo.flagProps) {
+    for (const auto& prop : info_.flagProps) {
         setOptionFlag(prop.first, prop.second);
     }
 }
@@ -252,18 +253,6 @@ std::unique_ptr<Message> FederateState::receiveAny(interface_handle& id)
     return nullptr;
 }
 
-const std::shared_ptr<const data_block>& FederateState::getValue(interface_handle handle,
-                                                                 uint32_t* inputIndex)
-{
-    return interfaces().getInput(handle)->getData(inputIndex);
-}
-
-const std::vector<std::shared_ptr<const data_block>>&
-    FederateState::getAllValues(interface_handle handle)
-{
-    return interfaces().getInput(handle)->getAllData();
-}
-
 void FederateState::routeMessage(const ActionMessage& msg)
 {
     if (parent_ != nullptr) {
@@ -301,12 +290,12 @@ void FederateState::createInterface(handle_type htype,
             if (checkActionFlag(getInterfaceFlags(), required_flag)) {
                 interfaceInformation.setPublicationProperty(handle,
                                                             defs::options::connection_required,
-                                                            1);
+                                                            true);
             }
             if (checkActionFlag(getInterfaceFlags(), optional_flag)) {
                 interfaceInformation.setPublicationProperty(handle,
                                                             defs::options::connection_optional,
-                                                            1);
+                                                            true);
             }
         } break;
         case handle_type::input: {
@@ -314,22 +303,22 @@ void FederateState::createInterface(handle_type htype,
             if (strict_input_type_checking) {
                 interfaceInformation.setInputProperty(handle,
                                                       defs::options::strict_type_checking,
-                                                      1);
+                                                      true);
             }
             if (ignore_unit_mismatch) {
                 interfaceInformation.setInputProperty(handle,
                                                       defs::options::ignore_unit_mismatch,
-                                                      1);
+                                                      true);
             }
             if (checkActionFlag(getInterfaceFlags(), required_flag)) {
                 interfaceInformation.setInputProperty(handle,
                                                       defs::options::connection_required,
-                                                      1);
+                                                      true);
             }
             if (checkActionFlag(getInterfaceFlags(), optional_flag)) {
                 interfaceInformation.setInputProperty(handle,
                                                       defs::options::connection_optional,
-                                                      1);
+                                                      true);
             }
         } break;
         case handle_type::endpoint: {
@@ -381,10 +370,10 @@ void FederateState::closeInterface(interface_handle handle, handle_type type)
     }
 }
 
-stx::optional<ActionMessage>
+std::optional<ActionMessage>
     FederateState::processPostTerminationAction(const ActionMessage& /*action*/)  // NOLINT
 {
-    return stx::nullopt;
+    return {};
 }
 
 iteration_result FederateState::waitSetup()
@@ -574,14 +563,14 @@ iteration_time FederateState::requestTime(Time nextTime, iteration_request itera
                 fillEventVectorNextIteration(time_granted);
                 break;
             case iteration_request::iterate_if_needed:
-                if (time_granted < nextTime || wait_for_current_time) {
+                if (time_granted < nextTime) {
                     fillEventVectorNextIteration(time_granted);
                 } else {
                     fillEventVectorUpTo(time_granted);
                 }
                 break;
             case iteration_request::no_iterations:
-                if (time_granted < nextTime || wait_for_current_time) {
+                if (time_granted < nextTime) {
                     fillEventVectorInclusive(time_granted);
                 } else {
                     fillEventVectorUpTo(time_granted);
@@ -830,8 +819,6 @@ message_processing_result FederateState::processActionMessage(ActionMessage& cmd
 
         break;
         case CMD_TIME_BLOCK:
-        case CMD_TIME_BARRIER:
-        case CMD_TIME_BARRIER_CLEAR:
         case CMD_TIME_UNBLOCK: {
             auto processed = timeCoord->processTimeMessage(cmd);
             if (processed == message_process_result::processed) {
@@ -1077,9 +1064,7 @@ message_processing_result FederateState::processActionMessage(ActionMessage& cmd
                         timeCoord->updateValueTime(cmd.actionTime);
                         LOG_TRACE(timeCoord->printTimeStatus());
                     }
-                    LOG_DATA(fmt::format("receive publication {} from {}",
-                                         prettyPrintString(cmd),
-                                         subI->getSourceName(src)));
+                    LOG_DATA(fmt::format("receive publication {}", prettyPrintString(cmd)));
                 }
             }
         } break;
@@ -1286,9 +1271,7 @@ void FederateState::setInterfaceProperty(const ActionMessage& cmd)
         case 'i':
             used = interfaceInformation.setInputProperty(cmd.dest_handle,
                                                          cmd.messageID,
-                                                         checkActionFlag(cmd, indicator_flag) ?
-                                                             cmd.getExtraDestData() :
-                                                             0);
+                                                         checkActionFlag(cmd, indicator_flag));
             if (!used) {
                 auto* ipt = interfaceInformation.getInput(cmd.dest_handle);
                 if (ipt != nullptr) {
@@ -1304,9 +1287,7 @@ void FederateState::setInterfaceProperty(const ActionMessage& cmd)
             used =
                 interfaceInformation.setPublicationProperty(cmd.dest_handle,
                                                             cmd.messageID,
-                                                            checkActionFlag(cmd, indicator_flag) ?
-                                                                cmd.getExtraDestData() :
-                                                                0);
+                                                            checkActionFlag(cmd, indicator_flag));
             if (!used) {
                 auto* pub = interfaceInformation.getPublication(cmd.dest_handle);
                 if (pub != nullptr) {
@@ -1322,9 +1303,7 @@ void FederateState::setInterfaceProperty(const ActionMessage& cmd)
         case 'e':
             used = interfaceInformation.setEndpointProperty(cmd.dest_handle,
                                                             cmd.messageID,
-                                                            checkActionFlag(cmd, indicator_flag) ?
-                                                                cmd.getExtraDestData() :
-                                                                0);
+                                                            checkActionFlag(cmd, indicator_flag));
             if (!used) {
                 auto* ept = interfaceInformation.getEndpoint(cmd.dest_handle);
                 if (ept != nullptr) {
@@ -1390,11 +1369,9 @@ void FederateState::setOptionFlag(int optionFlag, bool value)
 {
     switch (optionFlag) {
         case defs::flags::only_transmit_on_change:
-        case defs::options::handle_only_transmit_on_change:
             only_transmit_on_change = value;
             break;
         case defs::flags::only_update_on_change:
-        case defs::options::handle_only_update_on_change:
             interfaceInformation.setChangeUpdateFlag(value);
             break;
         case defs::flags::strict_input_type_checking:
@@ -1438,11 +1415,6 @@ void FederateState::setOptionFlag(int optionFlag, bool value)
         case defs::flags::ignore_time_mismatch_warnings:
             ignore_time_mismatch_warnings = value;
             break;
-        case defs::flags::wait_for_current_time_update:
-            // this flag is needed in both locations
-            wait_for_current_time = value;
-            timeCoord->setOptionFlag(optionFlag, value);
-            break;
         case defs::options::buffer_data:
             break;
         case defs::flags::connections_required:
@@ -1484,10 +1456,8 @@ bool FederateState::getOptionFlag(int optionFlag) const
 {
     switch (optionFlag) {
         case defs::flags::only_transmit_on_change:
-        case defs::options::handle_only_transmit_on_change:
             return only_transmit_on_change;
         case defs::flags::only_update_on_change:
-        case defs::options::handle_only_update_on_change:
             return interfaceInformation.getChangeUpdateFlag();
         case defs::flags::realtime:
             return realtime;
@@ -1514,7 +1484,7 @@ bool FederateState::getOptionFlag(int optionFlag) const
     }
 }
 
-int32_t FederateState::getHandleOption(interface_handle handle, char iType, int32_t option) const
+bool FederateState::getHandleOption(interface_handle handle, char iType, int32_t option) const
 {
     switch (iType) {
         case 'i':
@@ -1526,7 +1496,7 @@ int32_t FederateState::getHandleOption(interface_handle handle, char iType, int3
         default:
             break;
     }
-    return 0;
+    return false;
 }
 
 /** get an option flag value*/
@@ -1670,7 +1640,7 @@ std::string FederateState::processQueryActual(const std::string& query) const
         s << "[";
         auto ipts = interfaceInformation.getInputs();
         for (const auto& ipt : ipts) {
-            for (auto& isrc : ipt->input_sources) {
+            for (const auto& isrc : ipt->input_sources) {
                 s << isrc.fed_id << ':' << isrc.handle << ';';
             }
         }
