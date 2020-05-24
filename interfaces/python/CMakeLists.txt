@@ -212,20 +212,15 @@ if(HELICS_ENABLE_SWIG AND SWIG_EXECUTABLE)
 
     message(STATUS "swig target is ${SWIG_MODULE_helics_REAL_NAME}")
 
+    set_target_properties(${SWIG_MODULE_helics_REAL_NAME} PROPERTIES FOLDER interfaces)
     set_target_properties(
-        ${SWIG_MODULE_helics_REAL_NAME} PROPERTIES FOLDER interfaces DEBUG_POSTFIX ""
+        ${SWIG_MODULE_helics_REAL_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY
+                                                   ${CMAKE_CURRENT_BINARY_DIR}
     )
-
-    if(CMAKE_PROJECT_NAME STREQUAL "HELICS")
-        set_target_properties(
-            ${SWIG_MODULE_helics_REAL_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY
-                                                       ${CMAKE_CURRENT_BINARY_DIR}
-        )
-        set_target_properties(
-            ${SWIG_MODULE_helics_REAL_NAME} PROPERTIES LIBRARY_OUTPUT_DIRECTORY
-                                                       ${CMAKE_CURRENT_BINARY_DIR}
-        )
-    endif()
+    set_target_properties(
+        ${SWIG_MODULE_helics_REAL_NAME} PROPERTIES LIBRARY_OUTPUT_DIRECTORY
+                                                   ${CMAKE_CURRENT_BINARY_DIR}
+    )
     install(TARGETS ${SWIG_MODULE_helics_REAL_NAME} DESTINATION python COMPONENT python)
 
     set(HELICS_PYTHON_TARGET_NAME ${SWIG_MODULE_helics_REAL_NAME})
@@ -243,18 +238,16 @@ else()
     endif()
 
     # Set the output library name to _helics
-    set_target_properties(helicsPYTHON PROPERTIES PREFIX "_" OUTPUT_NAME "helics" DEBUG_POSTFIX "")
+    set_target_properties(helicsPYTHON PROPERTIES PREFIX "_" OUTPUT_NAME "helics")
 
     target_link_libraries(helicsPYTHON PUBLIC HELICS::helicsSharedLib)
     set_target_properties(helicsPYTHON PROPERTIES FOLDER interfaces)
-    if(CMAKE_PROJECT_NAME STREQUAL "HELICS")
-        set_target_properties(
-            helicsPYTHON PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-        )
-        set_target_properties(
-            helicsPYTHON PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-        )
-    endif()
+    set_target_properties(
+        helicsPYTHON PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    )
+    set_target_properties(
+        helicsPYTHON PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    )
     if(NOT MSVC)
         target_compile_options(
             helicsPYTHON PRIVATE -Wno-long-long -Wno-strict-aliasing -Wno-deprecated-declarations
