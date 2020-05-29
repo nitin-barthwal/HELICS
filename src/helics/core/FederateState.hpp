@@ -78,8 +78,6 @@ class FederateState {
   public:
     std::atomic<bool> init_transmitted{false};  //!< the initialization request has been transmitted
   private:
-    bool wait_for_current_time{
-        false};  //!< flag indicating that the federate should delay for the current time
     int errorCode{0};  //!< storage for an error code
     CommonCore* parent_{nullptr};  //!< pointer to the higher level;
     std::string errorString;  //!< storage for an error string populated on an error
@@ -167,6 +165,7 @@ class FederateState {
     std::unique_ptr<Message> receiveAny(interface_handle& id);
     /**
      * Return the data for the specified handle or the latest input
+     *
      */
     const std::shared_ptr<const data_block>& getValue(interface_handle handle,
                                                       uint32_t* inputIndex);
@@ -238,8 +237,6 @@ class FederateState {
     bool try_lock() const { return !processing.test_and_set(); }
     /** unlocks the processing*/
     void unlock() const { processing.clear(std::memory_order_release); }
-    /** get the current logging level*/
-    int loggingLevel() const { return logLevel; }
 
   private:
     /** process the federate queue until returnable event

@@ -133,8 +133,6 @@ class InputInfo {
 
     const std::string& getInjectionType() const;
     const std::string& getInjectionUnits() const;
-    /** get the name of the source given a global id*/
-    const std::string& getSourceName(global_handle source) const;
 
   private:
     bool updateData(dataRecord&& update, int index);
