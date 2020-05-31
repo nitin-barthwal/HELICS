@@ -121,34 +121,30 @@ typedef enum {
     /** used to not display warnings on mismatched requested times*/
     helics_flag_ignore_time_mismatch_warnings = 67,
     /** specify that a federate error should terminate the federation*/
-    helics_flag_terminate_on_error = 72,
-    /** specify that the log files should be flushed on every log message*/
-    helics_flag_force_logging_flush = 88,
-    /** specify that a full log should be dumped into a file*/
-    helics_flag_dumplog = 89
+    helics_flag_terminate_on_error = 72
 } helics_federate_flags;
 
 /** log level definitions
  */
-typedef enum { /** don't print anything except a few catastrophic errors*/
-               helics_log_level_no_print = -1,
-               /** only print error level indicators*/
-               helics_log_level_error = 0,
-               /** only print warnings and errors*/
-               helics_log_level_warning = 1,
-               /** warning errors and summary level information*/
-               helics_log_level_summary = 2,
-               /** summary+ notices about federate and broker connections +messages about network
-                  connections*/
-               helics_log_level_connections = 3,
-               /** connections+ interface definitions*/
-               helics_log_level_interfaces = 4,
-               /** interfaces + timing message*/
-               helics_log_level_timing = 5,
-               /** timing+ data transfer notices*/
-               helics_log_level_data = 6,
-               /** all internal messages*/
-               helics_log_level_trace = 7
+typedef enum {
+    /** don't print anything except a few catastrophic errors*/
+    helics_log_level_no_print = -1,
+    /** only print error level indicators*/
+    helics_log_level_error = 0,
+    /** only print warnings and errors*/
+    helics_log_level_warning = 1,
+    /** warning errors and summary level information*/
+    helics_log_level_summary = 2,
+    /** summary+ notices about federate and broker connections +messages about network connections*/
+    helics_log_level_connections = 3,
+    /** connections+ interface definitions*/
+    helics_log_level_interfaces = 4,
+    /** interfaces + timing message*/
+    helics_log_level_timing = 5,
+    /** timing+ data transfer notices*/
+    helics_log_level_data = 6,
+    /** all internal messages*/
+    helics_log_level_trace = 7
 } helics_log_levels;
 
 /** enumeration of return values from the C interface functions
@@ -184,14 +180,13 @@ typedef enum {
     helics_property_time_period = 140,
     /** the property controlling time offset for the period of federate*/
     helics_property_time_offset = 141,
-    /** the property controlling real time lag for a federate the max time a federate can lag
-       real time*/
+    /** the property controlling real time lag for a federate the max time a federate can lag real
+       time*/
     helics_property_time_rt_lag = 143,
-    /** the property controlling real time lead for a federate the max time a federate can be
-       ahead of real time*/
+    /** the property controlling real time lead for a federate the max time a federate can be ahead
+       of real time*/
     helics_property_time_rt_lead = 144,
-    /** the property controlling real time tolerance for a federate sets both rt_lag and
-       rt_lead*/
+    /** the property controlling real time tolerance for a federate sets both rt_lag and rt_lead*/
     helics_property_time_rt_tolerance = 145,
     /** the property controlling input delay for a federate*/
     helics_property_time_input_delay = 148,
@@ -213,24 +208,23 @@ typedef enum {
 typedef enum {
     /** time and priority order the inputs from the core library*/
     helics_multi_input_no_op = 0,
-    /** vectorize the inputs either double vector or string vector*/
-    helics_multi_input_vectorize_operation = 1,
     /** all inputs are assumed to be boolean and all must be true to return true*/
-    helics_multi_input_and_operation = 2,
+    helics_multi_input_and_operation = 1,
     /** all inputs are assumed to be boolean and at least one must be true to return true*/
-    helics_multi_input_or_operation = 3,
+    helics_multi_input_or_operation = 2,
     /** sum all the inputs*/
-    helics_multi_input_sum_operation = 4,
+    helics_multi_input_sum_operation = 3,
     /** do a difference operation on the inputs, first-sum(rest)
     for double input, vector diff for vector input*/
-    helics_multi_input_diff_operation = 5,
+    helics_multi_input_diff_operation = 4,
     /** find the max of the inputs*/
-    helics_multi_input_max_operation = 6,
+    helics_multi_input_max_operation = 5,
     /** find the min of the inputs*/
-    helics_multi_input_min_operation = 7,
+    helics_multi_input_min_operation = 6,
     /** take the average of the inputs*/
-    helics_multi_input_average_operation = 8
-
+    helics_multi_input_average_operation = 7,
+    /** vectorize the inputs either double vector or string vector*/
+    helics_multi_input_vectorize_operation = 8
 } helics_multi_input_mode;
 
 /** enumeration of options that apply to handles*/
@@ -251,11 +245,10 @@ typedef enum {
     helics_handle_option_strict_type_checking = 414,
     /** specify that the mismatching units should be ignored*/
     helics_handle_option_ignore_unit_mismatch = 447,
-    /** specify that an interface will only transmit on change(only applicable to
-       publications)*/
-    helics_handle_option_only_transmit_on_change = 452,
+    /** specify that an interface will only transmit on change(only applicable to publications)*/
+    helics_handle_option_only_transmit_on_change = 6,
     /** specify that an interface will only update if the value has actually changed*/
-    helics_handle_option_only_update_on_change = 454,
+    helics_handle_option_only_update_on_change = 8,
     /** specify that an interface does not participate in determining time interrupts*/
     helics_handle_option_ignore_interrupts = 475,
     /** specify the multi-input processing method for inputs*/
@@ -278,13 +271,12 @@ typedef enum {
     helics_filter_type_random_delay = 2,
     /** a filter type that randomly drops messages*/
     helics_filter_type_random_drop = 3,
-    /** a filter type that reroutes a message to a different destination than originally
-       specified*/
+    /** a filter type that reroutes a message to a different destination than originally specified*/
     helics_filter_type_reroute = 4,
     /** a filter type that duplicates a message and sends the copy to a different destination*/
     helics_filter_type_clone = 5,
-    /** a customizable filter type that can perform different actions on a message based on
-       firewall like rules*/
+    /** a customizable filter type that can perform different actions on a message based on firewall
+       like rules*/
     helics_filter_type_firewall = 6
 
 } helics_filter_type;
