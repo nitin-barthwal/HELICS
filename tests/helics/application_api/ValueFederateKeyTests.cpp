@@ -12,7 +12,6 @@ SPDX-License-Identifier: BSD-3-Clause
 #include "helics/application_api/Subscriptions.hpp"
 #include "helics/application_api/ValueFederate.hpp"
 #include "helics/core/helics_definitions.hpp"
-#include "helics/helics_enums.h"
 
 #include <future>
 #include <gtest/gtest.h>
@@ -21,9 +20,7 @@ SPDX-License-Identifier: BSD-3-Clause
 #else
 #    include "testFixtures_shared.hpp"
 #endif
-
 #include <fstream>
-#include <streambuf>
 
 /** these test cases test out the value federates
  */
@@ -80,11 +77,11 @@ TEST_P(valuefed_single_type, subscriber_and_publisher_registration)
 
     // check publications
 
-    const auto& pk = pubid.getKey();
-    const auto& pk2 = pubid2.getKey();
+    auto pk = pubid.getKey();
+    auto pk2 = pubid2.getKey();
     EXPECT_EQ(pk, "fed0/pub1");
     EXPECT_EQ(pk2, "pub2");
-    const auto& pub3name = pubid3.getKey();
+    auto pub3name = pubid3.getKey();
     EXPECT_EQ(pub3name, "fed0/pub3");
 
     EXPECT_EQ(pubid3.getType(), "double");
@@ -420,7 +417,7 @@ TEST_F(valuefed_tests, dual_transfer_broker_link_json_string)
 
     auto& inpid = vFed2->registerGlobalInput<std::string>("inp1");
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
-    broker->makeConnections(R"({"connections":[["pub1", "inp1"]]})");
+    broker->makeConnections("{\"connections\":[[\"pub1\", \"inp1\"]]}");
 
     // register the publications
     auto& pubid = vFed1->registerGlobalPublication<std::string>("pub1");
@@ -552,7 +549,7 @@ TEST_F(valuefed_tests, dual_transfer_core_link_json_string)
 
     auto& inpid = vFed2->registerGlobalInput<std::string>("inp1");
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
-    core->makeConnections(R"({"connections":[["pub1", "inp1"]]})");
+    core->makeConnections("{\"connections\":[[\"pub1\", \"inp1\"]]}");
     core = nullptr;
     // register the publications
     auto& pubid = vFed1->registerGlobalPublication<std::string>("pub1");
@@ -584,8 +581,6 @@ TEST_P(valuefed_single_type, init_publish)
 
     EXPECT_EQ(gtime, 1.0);
 
-    gtime = vFed1->getCurrentTime();
-    EXPECT_EQ(gtime, 1.0);
     // get the value
     subid.getValue(val);
     // make sure the string is what we expect
@@ -675,8 +670,7 @@ TEST_P(valuefed_single_type, all_callback)
     EXPECT_EQ(lastTime, 3.0);
 
     int ccnt = 0;
-    vFed1->setInputNotificationCallback(
-        [&](const helics::Input& /*unused*/, helics::Time /*unused*/) { ++ccnt; });
+    vFed1->setInputNotificationCallback([&](const helics::Input&, helics::Time) { ++ccnt; });
 
     vFed1->publishRaw(pubid3, db);
     vFed1->publish(pubid2, 4);
@@ -1044,45 +1038,3 @@ INSTANTIATE_TEST_SUITE_P(valuefed_key_tests,
 INSTANTIATE_TEST_SUITE_P(valuefed_key_tests,
                          valuefed_all_type_tests,
                          ::testing::ValuesIn(core_types_all));
-
-TEST_F(valuefed_tests, empty_get_default)
-{
-    SetupTest<helics::ValueFederate>("test", 1);
-    auto vFed1 = GetFederateAs<helics::ValueFederate>(0);
-
-    auto& sub = vFed1->registerSubscription("test1");
-    sub.setOption(helics::defs::options::connection_optional);
-    vFed1->enterExecutingMode();
-    vFed1->requestTime(10.0);
-    double val1{0.0};
-    EXPECT_NO_THROW(val1 = sub.getValue<double>());
-    EXPECT_EQ(val1, helics::invalidDouble);
-
-    std::complex<double> valc;
-    EXPECT_NO_THROW(valc = sub.getValue<std::complex<double>>());
-    EXPECT_EQ(valc, std::complex<double>(helics::invalidDouble, 0));
-
-    vFed1->finalize();
-}
-
-TEST_F(valuefed_tests, empty_get_complex)
-{
-    SetupTest<helics::ValueFederate>("test", 1);
-    auto vFed1 = GetFederateAs<helics::ValueFederate>(0);
-
-    auto& ipt = vFed1->registerInput("I1", "complex");
-    ipt.setOption(helics::defs::connections_optional);
-    ipt.addTarget("test_target");
-    vFed1->enterExecutingMode();
-    vFed1->requestTime(10.0);
-
-    std::complex<double> valc;
-    EXPECT_NO_THROW(valc = ipt.getValue<std::complex<double>>());
-    EXPECT_EQ(valc, std::complex<double>(helics::invalidDouble, 0));
-
-    double val1;
-    EXPECT_NO_THROW(val1 = ipt.getValue<double>());
-    EXPECT_EQ(val1, helics::invalidDouble);
-
-    vFed1->finalize();
-}
