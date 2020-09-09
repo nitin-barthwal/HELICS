@@ -8469,6 +8469,73 @@ fail:
 }
 
 
+SWIGINTERN PyObject *_wrap_helicsBrokerSetTimeBarrier(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  helics_broker arg1 = (helics_broker) 0 ;
+  helics_time arg2 ;
+  helics_error *arg3 = (helics_error *) 0 ;
+  int res1 ;
+  double val2 ;
+  int ecode2 = 0 ;
+  helics_error etemp3 ;
+  PyObject *swig_obj[2] ;
+  
+  {
+    etemp3=helicsErrorInitialize();
+    arg3=&etemp3;
+  }
+  if (!SWIG_Python_UnpackTuple(args, "helicsBrokerSetTimeBarrier", 2, 2, swig_obj)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(swig_obj[0],SWIG_as_voidptrptr(&arg1), 0, 0);
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "helicsBrokerSetTimeBarrier" "', argument " "1"" of type '" "helics_broker""'"); 
+  }
+  ecode2 = SWIG_AsVal_double(swig_obj[1], &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "helicsBrokerSetTimeBarrier" "', argument " "2"" of type '" "helics_time""'");
+  } 
+  arg2 = (helics_time)(val2);
+  helicsBrokerSetTimeBarrier(arg1,arg2,arg3);
+  resultobj = SWIG_Py_Void();
+  {
+    if (arg3->error_code!=helics_ok)
+    {
+      throwHelicsPythonException(arg3);
+      return NULL;
+    }
+  }
+  return resultobj;
+fail:
+  {
+    if (arg3->error_code!=helics_ok)
+    {
+      throwHelicsPythonException(arg3);
+      return NULL;
+    }
+  }
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_helicsBrokerClearTimeBarrier(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  helics_broker arg1 = (helics_broker) 0 ;
+  int res1 ;
+  PyObject *swig_obj[1] ;
+  
+  if (!args) SWIG_fail;
+  swig_obj[0] = args;
+  res1 = SWIG_ConvertPtr(swig_obj[0],SWIG_as_voidptrptr(&arg1), 0, 0);
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "helicsBrokerClearTimeBarrier" "', argument " "1"" of type '" "helics_broker""'"); 
+  }
+  helicsBrokerClearTimeBarrier(arg1);
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
 SWIGINTERN PyObject *_wrap_helicsCreateQuery(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   char *arg1 = (char *) 0 ;
@@ -8746,6 +8813,106 @@ SWIGINTERN PyObject *_wrap_helicsQueryIsCompleted(PyObject *SWIGUNUSEDPARM(self)
   resultobj = SWIG_From_int((int)(result));
   return resultobj;
 fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_helicsQuerySetTarget(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  helics_query arg1 = (helics_query) 0 ;
+  char *arg2 = (char *) 0 ;
+  helics_error *arg3 = (helics_error *) 0 ;
+  int res1 ;
+  int res2 ;
+  char *buf2 = 0 ;
+  int alloc2 = 0 ;
+  helics_error etemp3 ;
+  PyObject *swig_obj[2] ;
+  
+  {
+    etemp3=helicsErrorInitialize();
+    arg3=&etemp3;
+  }
+  if (!SWIG_Python_UnpackTuple(args, "helicsQuerySetTarget", 2, 2, swig_obj)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(swig_obj[0],SWIG_as_voidptrptr(&arg1), 0, 0);
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "helicsQuerySetTarget" "', argument " "1"" of type '" "helics_query""'"); 
+  }
+  res2 = SWIG_AsCharPtrAndSize(swig_obj[1], &buf2, NULL, &alloc2);
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "helicsQuerySetTarget" "', argument " "2"" of type '" "char const *""'");
+  }
+  arg2 = (char *)(buf2);
+  helicsQuerySetTarget(arg1,(char const *)arg2,arg3);
+  resultobj = SWIG_Py_Void();
+  if (alloc2 == SWIG_NEWOBJ) free((char*)buf2);
+  {
+    if (arg3->error_code!=helics_ok)
+    {
+      throwHelicsPythonException(arg3);
+      return NULL;
+    }
+  }
+  return resultobj;
+fail:
+  if (alloc2 == SWIG_NEWOBJ) free((char*)buf2);
+  {
+    if (arg3->error_code!=helics_ok)
+    {
+      throwHelicsPythonException(arg3);
+      return NULL;
+    }
+  }
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_helicsQuerySetQueryString(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  helics_query arg1 = (helics_query) 0 ;
+  char *arg2 = (char *) 0 ;
+  helics_error *arg3 = (helics_error *) 0 ;
+  int res1 ;
+  int res2 ;
+  char *buf2 = 0 ;
+  int alloc2 = 0 ;
+  helics_error etemp3 ;
+  PyObject *swig_obj[2] ;
+  
+  {
+    etemp3=helicsErrorInitialize();
+    arg3=&etemp3;
+  }
+  if (!SWIG_Python_UnpackTuple(args, "helicsQuerySetQueryString", 2, 2, swig_obj)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(swig_obj[0],SWIG_as_voidptrptr(&arg1), 0, 0);
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "helicsQuerySetQueryString" "', argument " "1"" of type '" "helics_query""'"); 
+  }
+  res2 = SWIG_AsCharPtrAndSize(swig_obj[1], &buf2, NULL, &alloc2);
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "helicsQuerySetQueryString" "', argument " "2"" of type '" "char const *""'");
+  }
+  arg2 = (char *)(buf2);
+  helicsQuerySetQueryString(arg1,(char const *)arg2,arg3);
+  resultobj = SWIG_Py_Void();
+  if (alloc2 == SWIG_NEWOBJ) free((char*)buf2);
+  {
+    if (arg3->error_code!=helics_ok)
+    {
+      throwHelicsPythonException(arg3);
+      return NULL;
+    }
+  }
+  return resultobj;
+fail:
+  if (alloc2 == SWIG_NEWOBJ) free((char*)buf2);
+  {
+    if (arg3->error_code!=helics_ok)
+    {
+      throwHelicsPythonException(arg3);
+      return NULL;
+    }
+  }
   return NULL;
 }
 
@@ -16607,6 +16774,23 @@ static PyMethodDef SwigMethods[] = {
 		":rtype: int\n"
 		":return: Will return helics_true if an asynchronous query has completed or a regular query call was made with a result,\n"
 		"            and false if an asynchronous query has not completed or is invalid\n"
+		""},
+	 { "helicsQuerySetTarget", _wrap_helicsQuerySetTarget, METH_VARARGS, "\n"
+		"Update the target of a query.\n"
+		"\n"
+		":type query: void\n"
+		":param query: The query object to change the target of.\n"
+		":type target: string\n"
+		":param target: the name of the target to query\n"
+		"\n"
+		""},
+	 { "helicsQuerySetQueryString", _wrap_helicsQuerySetQueryString, METH_VARARGS, "\n"
+		"Update the queryString of a query.\n"
+		"\n"
+		":type query: void\n"
+		":param query: The query object to change the target of.\n"
+		":type queryString: string\n"
+		":param queryString: the new queryString\n"
 		""},
 	 { "helicsQueryFree", _wrap_helicsQueryFree, METH_O, "Free the memory associated with a query object."},
 	 { "helicsCleanupLibrary", _wrap_helicsCleanupLibrary, METH_NOARGS, "\n"

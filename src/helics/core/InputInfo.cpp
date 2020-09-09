@@ -232,7 +232,7 @@ bool InputInfo::updateTimeUpTo(Time newTime)
             ++index;
             continue;
         }
-        if (currentValue->time > newTime) {
+        if (currentValue->time >= newTime) {
             ++index;
             continue;
         }
