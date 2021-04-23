@@ -1,6 +1,7 @@
 name: Generate Interfaces
 
 on:
+  workflow_dispatch:
   push:
     branches: 
       - master
